@@ -1,9 +1,19 @@
 {
-  "name": "prosemirror-setattrsstep",
+  "name": "@h0rseduck/prosemirror-setattrsstep",
+  "version": "1.0.0",
+  "description": "https://discuss.prosemirror.net/t/preventing-image-placeholder-replacement-from-being-undone/1394",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/h0rseduck/prosemirror-setattrsstep.git"
+  },
   "author": "h0rseduck",
-  "version": "0.1",
-  "dependencies": {
-    "prosemirror-transform": "1.2.4",
-    "prosemirror-model": "1.8.2"
-  }
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/h0rseduck/prosemirror-setattrsstep/issues"
+  },
+  "homepage": "https://github.com/h0rseduck/prosemirror-setattrsstep#readme"
 }
