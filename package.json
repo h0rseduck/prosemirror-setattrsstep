@@ -1,0 +1,9 @@
+{
+  "name": "prosemirror-setattrsstep",
+  "author": "h0rseduck",
+  "version": "0.1",
+  "dependencies": {
+    "prosemirror-transform": "1.2.4",
+    "prosemirror-model": "1.8.2"
+  }
+}
