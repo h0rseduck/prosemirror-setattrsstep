@@ -1,6 +1,6 @@
 {
   "name": "@h0rseduck/prosemirror-setattrsstep",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "https://discuss.prosemirror.net/t/preventing-image-placeholder-replacement-from-being-undone/1394",
   "main": "index.js",
   "scripts": {
