@@ -1,30 +1,44 @@
 import { Step, StepResult } from 'prosemirror-transform'
+import has from 'lodash/has'
+import set from 'lodash/set'
+import unset from 'lodash/unset'
+import get from 'lodash/get'
 
-const STEP_TYPE = 'setDocAttr'
+const STEP_TYPE = 'SetDocAttrStep'
 
-/**
- * For more context on what this is about:
- * @see https://discuss.prosemirror.net/t/changing-doc-attrs/784
- */
 export default class SetDocAttrStep extends Step {
-  constructor (key, value) {
+  constructor (path, value) {
     super()
-    this.key = key
+    this.path = path
     this.value = value
   }
 
   get stepType () { return STEP_TYPE }
 
   apply (doc) {
-    this.prevValue = doc.attrs[this.key]
+    if (!this.path) {
+      this.prevValue = doc.attrs
+      if (!this.value) {
+        doc.attrs = {}
+      } else {
+        doc.attrs = this.value
+      }
+      return StepResult.ok(doc)
+    }
+
+    this.prevValue = has(doc.attrs, this.path) ? get(doc.attrs, this.path) : false
     // avoid clobbering doc.type.defaultAttrs
     if (doc.attrs === doc.type.defaultAttrs) doc.attrs = Object.assign({}, doc.attrs)
-    doc.attrs[this.key] = this.value
+    if (!this.value) {
+      unset(doc.attrs, this.path)
+    } else {
+      set(doc.attrs, this.path, this.value)
+    }
     return StepResult.ok(doc)
   }
 
   invert () {
-    return new SetDocAttrStep(this.key, this.prevValue)
+    return new SetDocAttrStep(this.path, this.prevValue)
   }
 
   // position never changes so map should always return same step
@@ -33,13 +47,13 @@ export default class SetDocAttrStep extends Step {
   toJSON () {
     return {
       stepType: this.stepType,
-      key: this.key,
+      path: this.path,
       value: this.value
     }
   }
 
   static fromJSON (schema, json) {
-    return new SetDocAttrStep(json.key, json.value)
+    return new SetDocAttrStep(json.path, json.value)
   }
 }
 
