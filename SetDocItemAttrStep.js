@@ -1,35 +1,44 @@
 import { Step, StepResult } from 'prosemirror-transform'
+import has from 'lodash/has'
+import set from 'lodash/set'
+import unset from 'lodash/unset'
+import get from 'lodash/get'
 
 const STEP_TYPE = 'setDocItemAttr'
 
-const hasItemKey = (attrs, item, key) => {
-  return attrs[item] && Object.prototype.hasOwnProperty.call(attrs[item], key)
-}
-
 export default class SetDocItemAttrStep extends Step {
-  constructor (item, key, value) {
+  constructor (path, value) {
     super()
-    this.item = item
-    this.key = key
+    this.path = path
     this.value = value
   }
 
   get stepType () { return STEP_TYPE }
 
   apply (doc) {
-    this.prevValue = hasItemKey(doc.attrs, this.item, this.key) ? doc.attrs[this.item][this.key] : false
+    if (!this.path) {
+      this.prevValue = doc.attrs
+      if (!this.value) {
+        doc.attrs = {}
+      } else {
+        doc.attrs = this.value
+      }
+      return StepResult.ok(doc)
+    }
+
+    this.prevValue = has(doc.attrs, this.path) ? get(doc.attrs, this.path) : false
     // avoid clobbering doc.type.defaultAttrs
     if (doc.attrs === doc.type.defaultAttrs) doc.attrs = Object.assign({}, doc.attrs)
     if (!this.value) {
-      if (hasItemKey(doc.attrs, this.item, this.key)) delete doc.attrs[this.item][this.key]
+      unset(doc.attrs, this.path)
     } else {
-      doc.attrs[this.item][this.key] = this.value
+      set(doc.attrs, this.path, this.value)
     }
     return StepResult.ok(doc)
   }
 
   invert () {
-    return new SetDocItemAttrStep(this.item, this.key, this.prevValue)
+    return new SetDocItemAttrStep(this.path, this.prevValue)
   }
 
   // position never changes so map should always return same step
@@ -38,14 +47,13 @@ export default class SetDocItemAttrStep extends Step {
   toJSON () {
     return {
       stepType: this.stepType,
-      item: this.item,
-      key: this.key,
+      path: this.path,
       value: this.value
     }
   }
 
   static fromJSON (schema, json) {
-    return new SetDocItemAttrStep(json.item, json.key, json.value)
+    return new SetDocItemAttrStep(json.path, json.value)
   }
 }
 
