@@ -8,11 +8,11 @@ import isPlainObject from 'lodash/isPlainObject'
 const STEP_TYPE = 'SetDocAttrStep'
 
 export default class SetDocAttrStep extends Step {
-  constructor (path, value, update = false) {
+  constructor (path, value, isUpdate = false) {
     super()
     this.path = path
     this.value = value
-    this.update = update
+    this.isUpdate = isUpdate
   }
 
   get stepType () { return STEP_TYPE }
@@ -22,28 +22,29 @@ export default class SetDocAttrStep extends Step {
       this.prevValue = doc.attrs
       if (!this.value) {
         doc.attrs = {}
-      } else {
+      } else if (!this.isUpdate) {
         doc.attrs = this.value
+      } else if (isPlainObject(this.value)) {
+        doc.attrs = { ...doc.attrs, ...this.value }
       }
       return StepResult.ok(doc)
     }
 
     this.prevValue = has(doc.attrs, this.path) ? get(doc.attrs, this.path) : false
-    this.prevUpdate = !this.update
     // avoid clobbering doc.type.defaultAttrs
     if (doc.attrs === doc.type.defaultAttrs) doc.attrs = Object.assign({}, doc.attrs)
     if (!this.value) {
       unset(doc.attrs, this.path)
-    } else if (!this.update) {
+    } else if (!this.isUpdate) {
       set(doc.attrs, this.path, this.value)
-    } else if (isPlainObject(this.prevValue)) {
+    } else if (isPlainObject(this.prevValue) && isPlainObject(this.value)) {
       set(doc.attrs, this.path, { ...this.prevValue, ...this.value })
     }
     return StepResult.ok(doc)
   }
 
   invert () {
-    return new SetDocAttrStep(this.path, this.prevValue, this.prevUpdate)
+    return new SetDocAttrStep(this.path, this.prevValue, false)
   }
 
   // position never changes so map should always return same step
@@ -54,12 +55,12 @@ export default class SetDocAttrStep extends Step {
       stepType: this.stepType,
       path: this.path,
       value: this.value,
-      update: this.update
+      isUpdate: this.isUpdate
     }
   }
 
   static fromJSON (schema, json) {
-    return new SetDocAttrStep(json.path, json.value, json.update)
+    return new SetDocAttrStep(json.path, json.value, json.isUpdate)
   }
 }
 
