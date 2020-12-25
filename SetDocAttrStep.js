@@ -18,7 +18,7 @@ export default class SetDocAttrStep extends Step {
   apply (doc) {
     if (!this.path) {
       this.prevValue = doc.attrs
-      if (!this.value) {
+      if (this.value === false) {
         doc.attrs = {}
       } else if (isPlainObject(this.value)) {
         doc.attrs = this.value
@@ -29,7 +29,7 @@ export default class SetDocAttrStep extends Step {
     this.prevValue = get(doc.attrs, this.path, false)
     // avoid clobbering doc.type.defaultAttrs
     if (doc.attrs === doc.type.defaultAttrs) doc.attrs = Object.assign({}, doc.attrs)
-    if (!this.value) {
+    if (this.value === false) {
       unset(doc.attrs, this.path)
     } else if (isPlainObject(this.prevValue) && isPlainObject(this.value)) {
       set(doc.attrs, this.path, { ...this.prevValue, ...this.value })
