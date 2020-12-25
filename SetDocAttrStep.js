@@ -2,7 +2,6 @@ import { Step, StepResult } from 'prosemirror-transform'
 import set from 'lodash/set'
 import unset from 'lodash/unset'
 import get from 'lodash/get'
-import isPlainObject from 'lodash/isPlainObject'
 
 const STEP_TYPE = 'SetDocAttrStep'
 
@@ -16,23 +15,11 @@ export default class SetDocAttrStep extends Step {
   get stepType () { return STEP_TYPE }
 
   apply (doc) {
-    if (!this.path) {
-      this.prevValue = doc.attrs
-      if (this.value === false) {
-        doc.attrs = {}
-      } else if (isPlainObject(this.value)) {
-        doc.attrs = this.value
-      }
-      return StepResult.ok(doc)
-    }
-
-    this.prevValue = get(doc.attrs, this.path, false)
+    this.prevValue = get(doc.attrs, this.path, null)
     // avoid clobbering doc.type.defaultAttrs
     if (doc.attrs === doc.type.defaultAttrs) doc.attrs = Object.assign({}, doc.attrs)
-    if (this.value === false) {
+    if (this.value === null) {
       unset(doc.attrs, this.path)
-    } else if (isPlainObject(this.prevValue) && isPlainObject(this.value)) {
-      set(doc.attrs, this.path, { ...this.prevValue, ...this.value })
     } else {
       set(doc.attrs, this.path, this.value)
     }
