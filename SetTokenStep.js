@@ -1,18 +1,13 @@
 import { Step, StepResult } from 'prosemirror-transform'
 import set from 'lodash/set'
-import unset from 'lodash/unset'
 import get from 'lodash/get'
-import has from 'lodash/has'
 
 const STEP_TYPE = 'SetTokenStep'
-export const STEP_ACTION_ATTRS = 'attrs'
-export const STEP_ACTION_VALUE = 'value'
-const TOKEN_ATTR = 'tokens'
+export const TOKEN_ATTR = 'tokens'
 
 export default class SetTokenStep extends Step {
-  constructor (action, id, value) {
+  constructor (id, value) {
     super()
-    this.action = action
     this.id = id
     this.value = value
   }
@@ -20,45 +15,18 @@ export default class SetTokenStep extends Step {
   get stepType () { return STEP_TYPE }
 
   apply (doc) {
-    if (![STEP_ACTION_ATTRS, STEP_ACTION_VALUE].includes(this.action)) {
-      return StepResult.fail('Unknown action')
-    }
+    const path = [TOKEN_ATTR, this.id, 'value']
+    this.prevValue = get(doc.attrs, path, '')
+
     // avoid clobbering doc.type.defaultAttrs
     if (doc.attrs === doc.type.defaultAttrs) doc.attrs = Object.assign({}, doc.attrs)
 
-    const path = [TOKEN_ATTR, this.id]
-    const pathAttr = [ ...path, this.action ]
-    const hasToken = has(doc.attrs, path)
-    this.prevValue = get(doc.attrs, pathAttr, null)
-    
-    switch (this.action) {
-      case STEP_ACTION_ATTRS: {
-        if (this.value === null) {
-          unset(doc.attrs, path)
-        } else if (!hasToken) {
-          set(doc.attrs, path, {
-            attrs: this.value,
-            value: ''
-          })
-        } else {
-          set(doc.attrs, pathAttr, this.value)
-        }
-        break
-      }
-      case STEP_ACTION_VALUE: {
-        if (!hasToken) {
-          return StepResult.fail('Not found token')
-        }
-        set(doc.attrs, pathAttr, this.value)
-        break
-      }
-    }
-
+    set(doc.attrs, path, this.value)
     return StepResult.ok(doc)
   }
 
   invert () {
-    return new SetTokenStep(this.action, this.id, this.prevValue)
+    return new SetTokenStep(this.id, this.prevValue)
   }
 
   // position never changes so map should always return same step
@@ -67,22 +35,13 @@ export default class SetTokenStep extends Step {
   toJSON () {
     return {
       stepType: this.stepType,
-      action: this.action,
       id: this.id,
       value: this.value
     }
   }
 
   static fromJSON (schema, json) {
-    return new SetTokenStep(json.action, json.id, json.value)
-  }
-
-  static attrsStep (id, value) {
-    return new SetTokenStep(STEP_ACTION_ATTRS, id, value)
-  }
-
-  static valueStep (id, value) {
-    return new SetTokenStep(STEP_ACTION_VALUE, id, value)
+    return new SetTokenStep(json.id, json.value)
   }
 }
 
