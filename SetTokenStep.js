@@ -5,8 +5,8 @@ import get from 'lodash/get'
 import has from 'lodash/has'
 
 const STEP_TYPE = 'SetTokenStep'
-const STEP_ACTION_ATTRS = 'attrs'
-const STEP_ACTION_VALUE = 'value'
+export const STEP_ACTION_ATTRS = 'attrs'
+export const STEP_ACTION_VALUE = 'value'
 const TOKEN_ATTR = 'tokens'
 
 export default class SetTokenStep extends Step {
