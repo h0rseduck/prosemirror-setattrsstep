@@ -28,28 +28,30 @@ export default class SetTokenStep extends Step {
 
     const path = [TOKEN_ATTR, this.id]
     const pathAttr = [ ...path, this.action ]
+    const hasToken = has(doc.attrs, path)
     this.prevValue = get(doc.attrs, pathAttr, null)
     
     switch (this.action) {
       case STEP_ACTION_ATTRS: {
         if (this.value === null) {
           unset(doc.attrs, path)
+        } else if (!hasToken) {
+          set(doc.attrs, path, {
+            attrs: this.value,
+            value: ''
+          })
+        } else {
+          set(doc.attrs, pathAttr, this.value)
         }
         break
       }
       case STEP_ACTION_VALUE: {
-        if (!has(doc.attrs, path)) {
+        if (!hasToken) {
           return StepResult.fail('Not found token')
         }
-        if (this.value === null) {
-          unset(doc.attrs, pathAttr)
-        }
+        set(doc.attrs, pathAttr, this.value)
         break
       }
-    }
-
-    if (this.value !== null) {
-      set(doc.attrs, pathAttr, this.value)
     }
 
     return StepResult.ok(doc)
