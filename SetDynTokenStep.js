@@ -31,6 +31,10 @@ export default class SetDynTokenStep extends Step {
 
     // avoid clobbering doc.type.defaultAttrs
     if (doc.attrs === doc.type.defaultAttrs) doc.attrs = Object.assign({}, doc.attrs)
+
+    if (Array.isArray(doc.attrs[TOKEN_ATTR])) {
+      doc.attrs[TOKEN_ATTR] = {}
+    }
     
     switch (this.action) {
       case STEP_ACTION_ATTRS: {

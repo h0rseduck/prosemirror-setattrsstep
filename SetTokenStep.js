@@ -21,6 +21,9 @@ export default class SetTokenStep extends Step {
     // avoid clobbering doc.type.defaultAttrs
     if (doc.attrs === doc.type.defaultAttrs) doc.attrs = Object.assign({}, doc.attrs)
 
+    if (Array.isArray(doc.attrs[TOKEN_ATTR])) {
+      doc.attrs[TOKEN_ATTR] = {}
+    }
     set(doc.attrs, path, this.value)
     return StepResult.ok(doc)
   }
